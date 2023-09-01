@@ -1,9 +1,8 @@
 all:
-	
-	gcc -c ./module/itrargs/itrargs.c -o./obj/itrargs.o 
-	gcc -o main.o ./src/main.c ./obj/itrargs.o
+	gcc -o ./obj/main ./src/main.c
 run:
 	./main
+
 clean:
 	rm -rf ./*.o
 	rm -rf ./obj/*.o

@@ -1,79 +1,125 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <locale.h>
+#include <string.h>
 
-typedef struct type
+typedef struct validArgs
 {
-    char label[100];
     char type[100];
-} Type;
-const char *validTypes[] = {"char", "int", "float", "double"};
+    char label[100];
+} ValidArgs;
 
-int verifyValidChar(const char *token, const char *validTypes[], int tamanho)
-{
-    for (int i = 0; i < tamanho; i++)
-    {
-        if (strcmp(token, validTypes[i]) == 0)
-        {
-            return 0;
-        }
-    }
-    return -1;
-}
+ValidArgs args[100];
+int positionArgs = 0;
 
+const char *valid[] = {"int", "char", "float", "double"};
+
+char *
+findArg(int argc, char **argv, char *argToFind);
+char *verifingValid(int argc, char **argv, char *arg);
+int addingAndTokenizeArgs(int argc, char **argv);
+void seeAll();
+int countStr(const char *ptr[]);
+int indexOf(const char *haystack, const char *needle);
 int main(int argc, char **argv)
 {
-    setlocale(LC_ALL, "");
-    Type type[100];
-    int cont = -1;
+    positionArgs = 0;
+    addingAndTokenizeArgs(argc, argv);
+    seeAll();
 
-    if (argc > 2)
+    return 0;
+}
+
+char *findArg(int argc, char **argv, char *argToFind)
+{
+    if (&argc != NULL && argv != NULL && argToFind != NULL)
     {
-        if (strcmp(argv[1], "create") == 0)
+        for (int i = 0; i < argc; i++)
         {
-            for (int i = 2; i < argc; i++)
+            if (strcmp(argv[i], argToFind) == 0)
+                return argv[i];
+        }
+    }
+
+    return NULL;
+}
+
+char *verifingValid(int argc, char **argv, char *arg)
+{
+    if (&argc != NULL && argv != NULL && arg != NULL)
+    {
+        if (strstr(arg, ":") != NULL || strchr(arg, ':') != NULL)
+        {
+            for (int i = 0; i < countStr(valid); i++)
             {
-                char *token = strtok(argv[i], ":");
-                if (token != NULL && verifyValidChar(token, validTypes, argc - 2) == 0)
+                if (strstr(arg, valid[i]) != NULL)
                 {
-                    strncpy(type[++cont].type, token, sizeof(type[0].type) - 1);
-                    type[cont].type[sizeof(type[0].type) - 1] = '\0'; // Ensure null-terminated string
-                    token = strtok(NULL, ":");
-                    if (token != NULL)
-                    {
-                        strncpy(type[cont].label, token, sizeof(type[0].label) - 1);
-                        type[cont].label[sizeof(type[0].label) - 1] = '\0'; // Ensure null-terminated string
-                    }
-                    else
-                    {
-                        printf("Error: Invalid input format for argument %s\n", argv[i]);
-                        return 1;
-                    }
-                }
-                else
-                {
-                    printf("Error: Invalid type format for argument %s\n", argv[i]);
-                    return 1;
+                    return arg;
                 }
             }
-            for (int i = 0; i <= cont; i++)
+        }
+    }
+    return NULL;
+}
+
+int addingAndTokenizeArgs(int argc, char **argv)
+{
+    if (&argc != NULL && argv != NULL)
+    {
+        for (int i = 0; i < argc; i++)
+        {
+            if (verifingValid(argc, argv, argv[i]) != NULL)
             {
-                printf("\nSec:%d:", i + 1);
-                printf("\nType:%s\nLabel:%s", type[i].type, type[i].label);
+                char *buf = strtok(argv[i], ":");
+
+                if (buf != NULL)
+                {
+                    strcpy(args[positionArgs].type, buf);
+                    buf = strtok(NULL, ":");
+                    if (buf != NULL)
+                    {
+                        strcpy(args[positionArgs].label, buf);
+                        positionArgs++;
+                    }
+                }
             }
         }
-        else
+    }
+}
+
+void seeAll()
+{
+    for (int i = 0; i < positionArgs; i++)
+    {
+        printf("\nARG:%d", i + 1);
+        printf("\nTYPE:%s", args[i].type);
+        printf("\nLABEL:%s\n", args[i].label);
+    }
+}
+
+int countStr(const char **ptr)
+{
+    int count = 0;
+    if (ptr != NULL)
+    {
+        while (ptr[count] != NULL)
         {
-            printf("Error: Invalid command. Usage: %s create <type:label>\n", argv[0]);
-            return 1;
+            count++;
         }
+        }
+    return count;
+}
+
+int indexOf(const char *haystack, const char *needle)
+{
+    const char *found = strstr(haystack, needle);
+
+    if (found != NULL)
+    {
+        return found - haystack; // Calcula a posição subtraindo os ponteiros
     }
     else
     {
-        printf("Usage: %s create <type:label>\n", argv[0]);
-        return 1;
+        return -1; // Retorna -1 se a substring não for encontrada
     }
-
-    return 0;
 }
